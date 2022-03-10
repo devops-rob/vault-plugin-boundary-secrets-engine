@@ -185,8 +185,24 @@ func (b *boundaryBackend) pathRolesWrite(ctx context.Context, req *logical.Reque
 	//	return nil, fmt.Errorf("missing username in role")
 	//}
 
+	if name, ok := d.GetOk("name"); ok {
+		roleEntry.Name = name.(string)
+	} else if !ok && createOperation {
+		return nil, fmt.Errorf("missing name of role")
+	}
+
 	// Check there is a list of boundary roles
+	if boundaryRoles, ok := d.GetOk("boundary_roles"); ok {
+		roleEntry.AuthMethodID = boundaryRoles.(string)
+	}
+
 	// Check there is an auth method id
+	if authMethodID, ok := d.GetOk("auth_method_id"); ok {
+		roleEntry.AuthMethodID = authMethodID.(string)
+	} else if !ok && createOperation {
+		return nil, fmt.Errorf("missing auth_method_id in role")
+	}
+
 	// Check there is a scope id
 
 	if ttlRaw, ok := d.GetOk("ttl"); ok {

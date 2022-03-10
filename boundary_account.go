@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/boundary/api/accounts"
+	"github.com/hashicorp/boundary/api/roles"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/sethvargo/go-password/password"
@@ -21,7 +22,7 @@ type boundaryAccount struct {
 	AuthMethodId string `json:"auth_method_id"`
 	LoginName  string `json:"login_name"`
 	Password string `json:"password"`
-
+	BoundaryRoles []string `json:"boundary_roles"`
 }
 
 func (b *boundaryBackend) boundaryAccount() *framework.Secret {
@@ -45,6 +46,10 @@ func (b *boundaryBackend) boundaryAccount() *framework.Secret {
 			"account_id": {
 				Type: framework.TypeString,
 				Description: "Boundary Account ID",
+			},
+			"boundary_roles": {
+				Type: framework.TypeString,
+				Description: "List of Boundary roles assigned to the Account",
 			},
 			//"name": {
 			//	Type: framework.TypeLowerCaseString,
@@ -111,7 +116,9 @@ func (b *boundaryBackend) accountRenew(ctx context.Context, req *logical.Request
 }
 
 // createToken calls the HashiCups client to sign in and returns a new token
-func createAccount(ctx context.Context, c *boundaryClient, role string, authMethodID string) (*boundaryAccount, error) {
+func createAccount(ctx context.Context, c *boundaryClient, role string, authMethodID string, boundaryRoles []string) (*boundaryAccount, error) {
+
+
 	// Accounts client
 	aClient := accounts.NewClient(c.Client)
 
@@ -120,11 +127,11 @@ func createAccount(ctx context.Context, c *boundaryClient, role string, authMeth
 	if err != nil {
 		log.Fatal(err)
 	}
-	loginName := role+`-`+loginNamePostfix
+	loginName := `vault-role-`+role+`-`+loginNamePostfix
 
 	var accountOpts []accounts.Option
 	accountOpts = append(accountOpts, accounts.WithPasswordAccountLoginName(loginName))
-
+	accountOpts = append(accountOpts, accounts.WithName(loginName))
 
 	// Generating a password
 	accountPassword, err := password.Generate(16, 10, 0, false, false)
@@ -141,12 +148,28 @@ func createAccount(ctx context.Context, c *boundaryClient, role string, authMeth
 		return nil, err
 	}
 
+	var principalIds []string
+	principalIds = append(principalIds, acr.Item.Id)
+
+	rClient := roles.NewClient(c.Client)
+
+	var boundaryRoleIds []string
+	for s := range boundaryRoles {
+
+		rcr, err := rClient.AddPrincipals(ctx, string(s), 1, principalIds)
+		boundaryRoleIds = append(boundaryRoleIds, rcr.Item.Id)
+		if err != nil {
+
+			return nil, err
+		}
+	}
+
 	return &boundaryAccount{
 		AccountId:              acr.Item.Id,
 		LoginName:       acr.Item.Name,
 		Password: accountPassword,
 		AuthMethodId: acr.Item.AuthMethodId,
-
+		BoundaryRoles: boundaryRoleIds,
 	}, nil
 
 }

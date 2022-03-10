@@ -19,15 +19,15 @@ vault write boundary/config \
 3. Create a role
 
 ```shell
-vault write boundary/role/rob \
-  ttl=90 \
+vault write boundary/role/robert \
+  ttl=180 \
   max_ttl=360 \
-  scope_id=o_1234567890 \
-  auth_method_id=ampw_joMCbyL7qW \
-  role_type=userpass
+  auth_method_id=ampw_1234567890 \
+  role_type=userpass \
+  boundary_roles=r_EdUvGopfVJ
 ```
 
 4. Generate Boundary credentials
 ```shell
-vault read boundary/creds/rob
+vault read boundary/creds/robert
 ```

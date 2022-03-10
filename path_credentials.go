@@ -89,7 +89,7 @@ func (b *boundaryBackend) createAccount(ctx context.Context, s logical.Storage, 
 
 	var token *boundaryAccount
 
-	token, err = createAccount(ctx, client, roleEntry.Name, roleEntry.AuthMethodID)
+	token, err = createAccount(ctx, client, roleEntry.Name, roleEntry.AuthMethodID, roleEntry.BoundaryRoles)
 	if err != nil {
 		return nil, fmt.Errorf("error creating Boundary Account: %w", err)
 	}
@@ -99,6 +99,8 @@ func (b *boundaryBackend) createAccount(ctx context.Context, s logical.Storage, 
 	}
 
 	return token, nil
+
+
 }
 
 const pathCredentialsHelpSyn = `

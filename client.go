@@ -13,26 +13,25 @@ type boundaryClient struct {
 }
 
 func newClient(config *boundaryConfig) (*boundaryClient, error) {
-	//return &boundaryClient{nil}, nil
-	
+
 	if config == nil {
-		return nil, errors.New("Client configuration was nill.")
+		return nil, errors.New("client configuration was nil")
 	}
 
 	if config.LoginName == "" {
-		return nil, errors.New("Login name was not defined.")
+		return nil, errors.New("login name was not defined")
 	}
 
 	if config.Password == "" {
-		return nil, errors.New("Password was not defined.")
+		return nil, errors.New("password was not defined")
 	}
 
 	if config.Addr == "" {
-		return nil, errors.New("Boundary address was not defined.")
+		return nil, errors.New("boundary address was not defined")
 	}
 
 	if config.AuthMethodId == "" {
-		return nil, errors.New("Auth-method ID was not defined.")
+		return nil, errors.New("auth-method ID was not defined")
 	}
 
 	client, err := boundary.NewClient(nil)
