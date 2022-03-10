@@ -13,7 +13,7 @@ type boundaryClient struct {
 }
 
 func newClient(config *boundaryConfig) (*boundaryClient, error) {
-	return &boundaryClient{nil}, nil
+	//return &boundaryClient{nil}, nil
 	
 	if config == nil {
 		return nil, errors.New("Client configuration was nill.")

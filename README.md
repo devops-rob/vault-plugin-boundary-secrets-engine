@@ -27,3 +27,7 @@ vault write boundary/role/rob \
   role_type=userpass
 ```
 
+4. Generate Boundary credentials
+```shell
+vault read boundary/creds/rob
+```
