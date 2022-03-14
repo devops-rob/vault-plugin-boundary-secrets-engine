@@ -17,9 +17,9 @@ const (
 // boundaryConfig includes the minimum configuration
 // required to instantiate a new boundary client.
 type boundaryConfig struct {
-	LoginName string `json:"login_name"`
-	Password string `json:"password"`
-	Addr      string `json:"addr"`
+	LoginName    string `json:"login_name"`
+	Password     string `json:"password"`
+	Addr         string `json:"addr"`
 	AuthMethodId string `json:"auth_method_id"`
 }
 
@@ -31,46 +31,46 @@ type boundaryConfig struct {
 // when you read the configuration.
 func pathConfig(b *boundaryBackend) *framework.Path {
 	return &framework.Path{
-		Pattern:         "config",
-		Fields:          map[string]*framework.FieldSchema{
+		Pattern: "config",
+		Fields: map[string]*framework.FieldSchema{
 			"login_name": {
-				Type: framework.TypeString,
+				Type:        framework.TypeString,
 				Description: "The Boundary Login Name that Vault will use to manage Boundary",
-				Required: true,
+				Required:    true,
 				DisplayAttrs: &framework.DisplayAttributes{
-					Name: "Login Name",
+					Name:      "Login Name",
 					Sensitive: false,
 				},
 			},
 			"password": {
-				Type: framework.TypeString,
+				Type:        framework.TypeString,
 				Description: "The password of the user that Vault will use to manage Boundary",
-				Required: true,
+				Required:    true,
 				DisplayAttrs: &framework.DisplayAttributes{
-					Name: "Password",
+					Name:      "Password",
 					Sensitive: true,
 				},
 			},
 			"addr": {
-				Type: framework.TypeString,
+				Type:        framework.TypeString,
 				Description: "The address of the Boundary controller",
-				Required: true,
+				Required:    true,
 				DisplayAttrs: &framework.DisplayAttributes{
-					Name: "Addr",
+					Name:      "Addr",
 					Sensitive: false,
 				},
 			},
 			"auth_method_id": {
-				Type: framework.TypeString,
+				Type:        framework.TypeString,
 				Description: "The ID of the Boundary auth-method Vault will use to sign in",
-				Required: true,
+				Required:    true,
 				DisplayAttrs: &framework.DisplayAttributes{
-					Name: "Auth-method ID",
+					Name:      "Auth-method ID",
 					Sensitive: false,
 				},
 			},
 		},
-		Operations:      map[logical.Operation]framework.OperationHandler{
+		Operations: map[logical.Operation]framework.OperationHandler{
 			logical.ReadOperation: &framework.PathOperation{
 				Callback: b.pathConfigRead,
 			},
@@ -127,8 +127,8 @@ func (b *boundaryBackend) pathConfigRead(ctx context.Context, req *logical.Reque
 
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"login_name": config.LoginName,
-			"addr": config.Addr,
+			"login_name":     config.LoginName,
+			"addr":           config.Addr,
 			"auth_method_id": config.AuthMethodId,
 		},
 	}, nil
@@ -200,7 +200,6 @@ func (b *boundaryBackend) pathConfigDelete(ctx context.Context, req *logical.Req
 
 	return nil, err
 }
-
 
 // pathConfigHelpSynopsis summarizes the help text for the configuration
 const pathConfigHelpSynopsis = `Configure the Boundary backend.`

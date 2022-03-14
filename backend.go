@@ -37,7 +37,7 @@ func backend() *boundaryBackend {
 				"role/*",
 			},
 		},
-		Paths:       framework.PathAppend(
+		Paths: framework.PathAppend(
 			pathRole(&b),
 			[]*framework.Path{
 				pathConfig(&b),

@@ -1,14 +1,13 @@
 package boundarysecrets
 
-
 import (
-"context"
-"os"
-"testing"
+	"context"
+	"os"
+	"testing"
 
-"github.com/hashicorp/go-hclog"
-"github.com/hashicorp/vault/sdk/logical"
-"github.com/stretchr/testify/require"
+	"github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/vault/sdk/logical"
+	"github.com/stretchr/testify/require"
 )
 
 const (

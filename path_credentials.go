@@ -61,10 +61,10 @@ func (b *boundaryBackend) createUserCreds(ctx context.Context, req *logical.Requ
 	// If you want to reference any information in your code, you need to
 	// store it in internal data!
 	resp := b.Secret(Account).Response(map[string]interface{}{
-		"account_id":    account.AccountId,
+		"account_id":     account.AccountId,
 		"auth_method_id": account.AuthMethodId,
-		"password":  account.Password,
-		"login_name": account.LoginName,
+		"password":       account.Password,
+		"login_name":     account.LoginName,
 	}, map[string]interface{}{
 		"account_id": account.AccountId,
 	})
@@ -80,7 +80,7 @@ func (b *boundaryBackend) createUserCreds(ctx context.Context, req *logical.Requ
 	return resp, nil
 }
 
-// createToken uses the HashiCups client to sign in and get a new token
+// createAccount uses the Boundary client to create a new account
 func (b *boundaryBackend) createAccount(ctx context.Context, s logical.Storage, roleEntry *boundaryRoleEntry) (*boundaryAccount, error) {
 	client, err := b.getClient(ctx, s)
 	if err != nil {
@@ -100,15 +100,13 @@ func (b *boundaryBackend) createAccount(ctx context.Context, s logical.Storage, 
 
 	return token, nil
 
-
 }
 
 const pathCredentialsHelpSyn = `
-Generate a HashiCups API token from a specific Vault role.
+Generate a Boundary account from a specific Vault role.
 `
 
 const pathCredentialsHelpDesc = `
-This path generates a HashiCups API user tokens
-based on a particular role. A role can only represent a user token,
-since HashiCups doesn't have other types of tokens.
+This path generates a Boundary account
+based on a particular role.
 `

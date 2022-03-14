@@ -9,25 +9,25 @@ import (
 )
 
 type boundaryRoleEntry struct {
-	AuthMethodID string `json:"auth_method_id"`
-	Name string `json:"name"`
-	ScopeId string `json:"scope_id"`
-	LoginName string        `json:"login_name"`
-	Password string `json:"password"`
-	BoundaryRoles []string `json:"boundary_roles"`
-	TTL      time.Duration `json:"ttl"`
-	MaxTTL   time.Duration `json:"max_ttl"`
+	AuthMethodID  string        `json:"auth_method_id"`
+	Name          string        `json:"name"`
+	ScopeId       string        `json:"scope_id"`
+	LoginName     string        `json:"login_name"`
+	Password      string        `json:"password"`
+	BoundaryRoles []string      `json:"boundary_roles"`
+	TTL           time.Duration `json:"ttl"`
+	MaxTTL        time.Duration `json:"max_ttl"`
 }
 
 func (r *boundaryRoleEntry) toResponseData() map[string]interface{} {
 	respData := map[string]interface{}{
-		"ttl":      r.TTL.Seconds(),
-		"max_ttl":  r.MaxTTL.Seconds(),
-		"login_name": r.LoginName,
+		"ttl":            r.TTL.Seconds(),
+		"max_ttl":        r.MaxTTL.Seconds(),
+		"login_name":     r.LoginName,
 		"boundary_roles": r.BoundaryRoles,
-		"name": r.Name,
+		"name":           r.Name,
 		"auth_method_id": r.AuthMethodID,
-		"scope_id": r.ScopeId,
+		"scope_id":       r.ScopeId,
 	}
 	return respData
 }
@@ -36,17 +36,17 @@ func (r *boundaryRoleEntry) toResponseData() map[string]interface{} {
 func pathRole(b *boundaryBackend) []*framework.Path {
 	return []*framework.Path{
 		{
-			Pattern:         "role/" + framework.GenericNameRegex("name"),
-			Fields:          map[string]*framework.FieldSchema{
+			Pattern: "role/" + framework.GenericNameRegex("name"),
+			Fields: map[string]*framework.FieldSchema{
 				"name": {
-					Type: framework.TypeLowerCaseString,
+					Type:        framework.TypeLowerCaseString,
 					Description: "Name of Role",
-					Required: true,
+					Required:    true,
 				},
 				"boundary_roles": {
-					Type: framework.TypeLowerCaseString, // This should be a list of Boundary roles
+					Type:        framework.TypeLowerCaseString, // This should be a list of Boundary roles
 					Description: "List of Boundary roles to be assigned to generated users.",
-					Required: false,
+					Required:    false,
 				},
 				"ttl": {
 					Type:        framework.TypeDurationSecond,
@@ -57,19 +57,19 @@ func pathRole(b *boundaryBackend) []*framework.Path {
 					Description: "Maximum time for role. If not set or set to 0, will use system default.",
 				},
 				"scope_id": {
-					Type: framework.TypeLowerCaseString, // Boundary scope ID under which Users will be created
+					Type:        framework.TypeLowerCaseString, // Boundary scope ID under which Users will be created
 					Description: "Boundary scope ID of the Vault generated user",
 				},
 				"auth_method_id": {
-					Type: framework.TypeLowerCaseString, // Boundary auth method ID that the account is created under
+					Type:        framework.TypeLowerCaseString, // Boundary auth method ID that the account is created under
 					Description: "Boundary auth method ID that the account is created under",
 				},
-				"role_type": {
-					Type: framework.TypeLowerCaseString,
+				"credential_type": {
+					Type:        framework.TypeLowerCaseString,
 					Description: "Vault role type. Currently only supports `userpass` type.",
 				},
 			},
-			Operations:      map[logical.Operation]framework.OperationHandler{
+			Operations: map[logical.Operation]framework.OperationHandler{
 				logical.ReadOperation: &framework.PathOperation{
 					Callback: b.pathRolesRead,
 				},
@@ -245,4 +245,3 @@ func (b *boundaryBackend) pathRolesList(ctx context.Context, req *logical.Reques
 
 	return logical.ListResponse(entries), nil
 }
-

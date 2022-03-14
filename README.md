@@ -23,7 +23,7 @@ vault write boundary/role/robert \
   ttl=180 \
   max_ttl=360 \
   auth_method_id=ampw_1234567890 \
-  role_type=userpass \
+  credential_type=userpass \
   boundary_roles=r_EdUvGopfVJ
 ```
 
