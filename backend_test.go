@@ -12,9 +12,9 @@ import (
 
 const (
 	envVarRunAccTests       = "VAULT_ACC"
-	envVarHashiCupsUsername = "TEST_HASHICUPS_USERNAME"
-	envVarHashiCupsPassword = "TEST_HASHICUPS_PASSWORD"
-	envVarHashiCupsURL      = "TEST_HASHICUPS_URL"
+	envVarBoundaryUsername = "TEST_BOUNDARY_LOGIN_NAME"
+	envVarBoundaryPassword = "TEST_BOUNDARY_PASSWORD"
+	envVarBoundaryAddr      = "TEST_BOUNDARY_ADDR"
 )
 
 // getTestBackend will help you construct a test backend object.
@@ -43,9 +43,10 @@ var runAcceptanceTests = os.Getenv(envVarRunAccTests) == "1"
 // testEnv creates an object to store and track testing environment
 // resources
 type testEnv struct {
-	Username string
+	LoginName string
 	Password string
-	URL      string
+	Addr      string
+	AuthMethodId string
 
 	Backend logical.Backend
 	Context context.Context
@@ -67,9 +68,10 @@ func (e *testEnv) AddConfig(t *testing.T) {
 		Path:      "config",
 		Storage:   e.Storage,
 		Data: map[string]interface{}{
-			"username": e.Username,
+			"login_name": e.LoginName,
 			"password": e.Password,
-			"url":      e.URL,
+			"addr":      e.Addr,
+			"auth_method_id": e.AuthMethodId,
 		},
 	}
 	resp, err := e.Backend.HandleRequest(e.Context, req)
@@ -85,7 +87,7 @@ func (e *testEnv) AddUserTokenRole(t *testing.T) {
 		Path:      "role/test-user-token",
 		Storage:   e.Storage,
 		Data: map[string]interface{}{
-			"username": e.Username,
+			"login_name": e.LoginName,
 		},
 	}
 	resp, err := e.Backend.HandleRequest(e.Context, req)
@@ -105,8 +107,8 @@ func (e *testEnv) ReadUserToken(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, resp)
 
-	if t, ok := resp.Data["token"]; ok {
-		e.Tokens = append(e.Tokens, t.(string))
+	if t, ok := resp.Data["password"]; ok {
+		e.Password = t.(string)
 	}
 	require.NotEmpty(t, resp.Data["token"])
 
@@ -123,21 +125,20 @@ func (e *testEnv) ReadUserToken(t *testing.T) {
 
 // CleanupUserTokens removes the tokens
 // when the test completes.
-//func (e *testEnv) CleanupUserTokens(t *testing.T) {
-//	if len(e.Tokens) == 0 {
-//		t.Fatalf("expected 2 tokens, got: %d", len(e.Tokens))
-//	}
-//
-//	for _, token := range e.Tokens {
-//		b := e.Backend.(*boundaryBackend)
-//		client, err := b.getClient(e.Context, e.Storage)
-//		if err != nil {
-//			t.Fatal("fatal getting client")
-//		}
-//
-//		//client.Client.Token = string(token)
-//		//if err := client.SignOut(); err != nil {
-//		//	t.Fatalf("unexpected error deleting user token: %s", err)
-//		//}
-//	}
-//}
+func (e *testEnv) CleanupUserTokens(t *testing.T) {
+	if len(e.Tokens) == 0 {
+		t.Fatalf("expected 2 tokens, got: %d", len(e.Tokens))
+	}
+
+	for _, token := range e.Tokens {
+		b := e.Backend.(*boundaryBackend)
+		client, err := b.getClient(e.Context, e.Storage)
+		if err != nil {
+			t.Fatal("fatal getting client")
+		}
+		client.Client.Token = string(token)
+		if err := client.SignOut(); err != nil {
+			t.Fatalf("unexpected error deleting user token: %s", err)
+		}
+	}
+}
