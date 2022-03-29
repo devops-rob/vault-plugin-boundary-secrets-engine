@@ -14,7 +14,7 @@ type boundaryRoleEntry struct {
 	ScopeId       string        `json:"scope_id"`
 	LoginName     string        `json:"login_name"`
 	Password      string        `json:"password"`
-	BoundaryRoles []string      `json:"boundary_roles"`
+	BoundaryRoles string      `json:"boundary_roles"`
 	TTL           time.Duration `json:"ttl"`
 	MaxTTL        time.Duration `json:"max_ttl"`
 }
@@ -44,7 +44,7 @@ func pathRole(b *boundaryBackend) []*framework.Path {
 					Required:    true,
 				},
 				"boundary_roles": {
-					Type:        framework.TypeLowerCaseString, // This should be a list of Boundary roles
+					Type:        framework.TypeString, // This should be a list of Boundary roles
 					Description: "List of Boundary roles to be assigned to generated users.",
 					Required:    false,
 				},
@@ -193,7 +193,9 @@ func (b *boundaryBackend) pathRolesWrite(ctx context.Context, req *logical.Reque
 
 	// Check there is a list of boundary roles
 	if boundaryRoles, ok := d.GetOk("boundary_roles"); ok {
-		roleEntry.AuthMethodID = boundaryRoles.(string)
+		roleEntry.BoundaryRoles = boundaryRoles.(string)
+	} else if !ok && createOperation {
+		return nil, fmt.Errorf("missing boundary_roles in role")
 	}
 
 	// Check there is an auth method id
@@ -204,6 +206,11 @@ func (b *boundaryBackend) pathRolesWrite(ctx context.Context, req *logical.Reque
 	}
 
 	// Check there is a scope id
+	if scopeId, ok := d.GetOk("scope_id"); ok {
+		roleEntry.ScopeId = scopeId.(string)
+	} else if !ok && createOperation {
+		return nil, fmt.Errorf("missing scope_id in role")
+	}
 
 	if ttlRaw, ok := d.GetOk("ttl"); ok {
 		roleEntry.TTL = time.Duration(ttlRaw.(int)) * time.Second

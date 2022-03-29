@@ -51,7 +51,6 @@ func newClient(config *boundaryConfig) (*boundaryClient, error) {
 		return nil, err
 	}
 
-	// pass this client to any other resource specific API resources
 	client.SetToken(fmt.Sprint(authenticationResult.Attributes["token"]))
 
 	return &boundaryClient{client}, nil

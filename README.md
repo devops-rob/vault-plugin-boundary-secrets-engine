@@ -24,7 +24,8 @@ vault write boundary/role/robert \
   max_ttl=360 \
   auth_method_id=ampw_1234567890 \
   credential_type=userpass \
-  boundary_roles=r_EdUvGopfVJ
+  boundary_roles=r_cbvEFZbN1S,r_r8mxdp7zOp \
+  scope_id=global
 ```
 
 4. Generate Boundary credentials

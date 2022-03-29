@@ -62,11 +62,14 @@ func (b *boundaryBackend) createUserCreds(ctx context.Context, req *logical.Requ
 	// store it in internal data!
 	resp := b.Secret(Account).Response(map[string]interface{}{
 		"account_id":     account.AccountId,
+		"boundary_roles": account.BoundaryRoles,
+		"user_id": account.UserId,
 		"auth_method_id": account.AuthMethodId,
 		"password":       account.Password,
 		"login_name":     account.LoginName,
 	}, map[string]interface{}{
 		"account_id": account.AccountId,
+		"user_id": account.UserId,
 	})
 
 	if role.TTL > 0 {
@@ -89,7 +92,7 @@ func (b *boundaryBackend) createAccount(ctx context.Context, s logical.Storage, 
 
 	var token *boundaryAccount
 
-	token, err = createAccount(ctx, client, roleEntry.Name, roleEntry.AuthMethodID, roleEntry.BoundaryRoles)
+	token, err = createAccount(ctx, client, roleEntry.Name, roleEntry.AuthMethodID, roleEntry.BoundaryRoles, roleEntry.ScopeId)
 	if err != nil {
 		return nil, fmt.Errorf("error creating Boundary Account: %w", err)
 	}

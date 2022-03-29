@@ -91,8 +91,10 @@ func (b *boundaryBackend) getClient(ctx context.Context, s logical.Storage) (*bo
 		return nil, err
 	}
 
+	// adding to debug client connection issue
+	b.Logger()
+
 	return b.client, nil
-	//return nil, fmt.Errorf("need to return client")
 }
 
 const backendHelp = `
