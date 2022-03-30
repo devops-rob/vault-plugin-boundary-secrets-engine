@@ -2,6 +2,8 @@ package boundarysecrets
 
 import (
 	"context"
+	"github.com/hashicorp/boundary/api/accounts"
+	"github.com/hashicorp/boundary/api/users"
 	"os"
 	"testing"
 
@@ -12,8 +14,8 @@ import (
 
 const (
 	envVarRunAccTests       = "VAULT_ACC"
-	envVarBoundaryUsername = "TEST_BOUNDARY_LOGIN_NAME"
-	envVarBoundaryPassword = "TEST_BOUNDARY_PASSWORD"
+	envVarBoundaryLoginName = "TEST_BOUNDARY_LOGIN_NAME"
+	envVarBoundaryPassword  = "TEST_BOUNDARY_PASSWORD"
 	envVarBoundaryAddr      = "TEST_BOUNDARY_ADDR"
 )
 
@@ -43,9 +45,9 @@ var runAcceptanceTests = os.Getenv(envVarRunAccTests) == "1"
 // testEnv creates an object to store and track testing environment
 // resources
 type testEnv struct {
-	LoginName string
-	Password string
-	Addr      string
+	LoginName    string
+	Password     string
+	Addr         string
 	AuthMethodId string
 
 	Backend logical.Backend
@@ -53,10 +55,10 @@ type testEnv struct {
 	Storage logical.Storage
 
 	// SecretToken tracks the API token, for checking rotations
-	SecretToken string
+	UserId string
 
 	// Tokens tracks the generated tokens, to make sure we clean up
-	Tokens []string
+	AccountId string
 }
 
 // AddConfig adds the configuration to the test backend.
@@ -68,9 +70,9 @@ func (e *testEnv) AddConfig(t *testing.T) {
 		Path:      "config",
 		Storage:   e.Storage,
 		Data: map[string]interface{}{
-			"login_name": e.LoginName,
-			"password": e.Password,
-			"addr":      e.Addr,
+			"login_name":     e.LoginName,
+			"password":       e.Password,
+			"addr":           e.Addr,
 			"auth_method_id": e.AuthMethodId,
 		},
 	}
@@ -110,35 +112,77 @@ func (e *testEnv) ReadUserToken(t *testing.T) {
 	if t, ok := resp.Data["password"]; ok {
 		e.Password = t.(string)
 	}
-	require.NotEmpty(t, resp.Data["token"])
+	require.NotEmpty(t, resp.Data["password"])
 
-	if e.SecretToken != "" {
-		require.NotEqual(t, e.SecretToken, resp.Data["token"])
+	if t, ok := resp.Data["login_name"]; ok {
+		e.LoginName = t.(string)
 	}
+	require.NotEmpty(t, resp.Data["login_name"])
 
-	// collect secret IDs to revoke at end of test
-	require.NotNil(t, resp.Secret)
-	if t, ok := resp.Secret.InternalData["token"]; ok {
-		e.SecretToken = t.(string)
+	if t, ok := resp.Data["auth_method_id"]; ok {
+		e.AuthMethodId = t.(string)
 	}
+	require.NotEmpty(t, resp.Data["auth_method_id"])
+
+	if t, ok := resp.Data["account_id"]; ok {
+		e.AccountId = t.(string)
+	}
+	require.NotEmpty(t, resp.Data["account_id"])
+
+	if t, ok := resp.Data["user_id"]; ok {
+		e.UserId = t.(string)
+	}
+	require.NotEmpty(t, resp.Data["user_id"])
+
+	//if e.SecretToken != "" {
+	//	require.NotEqual(t, e.SecretToken, resp.Data["token"])
+	//}
+	//
+	//// collect secret IDs to revoke at end of test
+	//require.NotNil(t, resp.Secret)
+	//if t, ok := resp.Secret.InternalData["token"]; ok {
+	//	e.SecretToken = t.(string)
+	//}
 }
 
 // CleanupUserTokens removes the tokens
 // when the test completes.
 func (e *testEnv) CleanupUserTokens(t *testing.T) {
-	if len(e.Tokens) == 0 {
-		t.Fatalf("expected 2 tokens, got: %d", len(e.Tokens))
+	//if len(e.Tokens) == 0 {
+	//	t.Fatalf("expected 2 tokens, got: %d", len(e.Tokens))
+	//}
+	//
+	//for _, token := range e.Tokens {
+	//	b := e.Backend.(*boundaryBackend)
+	//	client, err := b.getClient(e.Context, e.Storage)
+	//	if err != nil {
+	//		t.Fatal("fatal getting client")
+	//	}
+	//	client.Client.Token = string(token)
+	//	if err := client.SignOut(); err != nil {
+	//		t.Fatalf("unexpected error deleting user token: %s", err)
+	//	}
+	//}
+
+	b := e.Backend.(*boundaryBackend)
+	client, err := b.getClient(e.Context, e.Storage)
+	if err != nil {
+		t.Fatal("fatal getting client")
 	}
 
-	for _, token := range e.Tokens {
-		b := e.Backend.(*boundaryBackend)
-		client, err := b.getClient(e.Context, e.Storage)
-		if err != nil {
-			t.Fatal("fatal getting client")
-		}
-		client.Client.Token = string(token)
-		if err := client.SignOut(); err != nil {
-			t.Fatalf("unexpected error deleting user token: %s", err)
-		}
+	ucr := users.NewClient(client.Client)
+	var userOpts []users.Option
+	_, err = ucr.Delete(e.Context, e.UserId, userOpts...)
+	if err != nil {
+		t.Fatalf("unexpected error deleting user: %s", err)
 	}
+
+	acr := accounts.NewClient(client.Client)
+
+	var opts []accounts.Option
+	_, err = acr.Delete(e.Context, e.AccountId, opts...)
+	if err != nil {
+		t.Fatalf("unexpected error deleting account: %s", err)
+	}
+
 }

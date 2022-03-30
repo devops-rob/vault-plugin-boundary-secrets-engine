@@ -63,13 +63,13 @@ func (b *boundaryBackend) createUserCreds(ctx context.Context, req *logical.Requ
 	resp := b.Secret(Account).Response(map[string]interface{}{
 		"account_id":     account.AccountId,
 		"boundary_roles": account.BoundaryRoles,
-		"user_id": account.UserId,
+		"user_id":        account.UserId,
 		"auth_method_id": account.AuthMethodId,
 		"password":       account.Password,
 		"login_name":     account.LoginName,
 	}, map[string]interface{}{
 		"account_id": account.AccountId,
-		"user_id": account.UserId,
+		"user_id":    account.UserId,
 	})
 
 	if role.TTL > 0 {

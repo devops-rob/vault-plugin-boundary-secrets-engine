@@ -1,15 +1,14 @@
 package boundarysecrets
 
-
 import (
-"context"
-"os"
-"testing"
-"time"
+	"context"
+	"os"
+	"testing"
+	"time"
 
-log "github.com/hashicorp/go-hclog"
-"github.com/hashicorp/vault/sdk/helper/logging"
-"github.com/hashicorp/vault/sdk/logical"
+	log "github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/vault/sdk/helper/logging"
+	"github.com/hashicorp/vault/sdk/logical"
 )
 
 // newAcceptanceTestEnv creates a test environment for credentials
@@ -30,12 +29,12 @@ func newAcceptanceTestEnv() (*testEnv, error) {
 		return nil, err
 	}
 	return &testEnv{
-		Username: os.Getenv(envVarHashiCupsUsername),
-		Password: os.Getenv(envVarHashiCupsPassword),
-		URL:      os.Getenv(envVarHashiCupsURL),
-		Backend:  b,
-		Context:  ctx,
-		Storage:  &logical.InmemStorage{},
+		LoginName: os.Getenv(envVarBoundaryLoginName),
+		Password:  os.Getenv(envVarBoundaryPassword),
+		Addr:      os.Getenv(envVarBoundaryAddr),
+		Backend:   b,
+		Context:   ctx,
+		Storage:   &logical.InmemStorage{},
 	}, nil
 }
 

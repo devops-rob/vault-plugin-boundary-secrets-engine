@@ -19,12 +19,12 @@ const (
 )
 
 type boundaryAccount struct {
-	AccountId     string   `json:"account_id"`
-	AuthMethodId  string   `json:"auth_method_id"`
-	LoginName     string   `json:"login_name"`
-	Password      string   `json:"password"`
+	AccountId     string `json:"account_id"`
+	AuthMethodId  string `json:"auth_method_id"`
+	LoginName     string `json:"login_name"`
+	Password      string `json:"password"`
 	BoundaryRoles string `json:"boundary_roles"`
-	UserId string `json:"user_id"`
+	UserId        string `json:"user_id"`
 }
 
 func (b *boundaryBackend) boundaryAccount() *framework.Secret {
@@ -50,7 +50,7 @@ func (b *boundaryBackend) boundaryAccount() *framework.Secret {
 				Description: "Boundary Account ID",
 			},
 			"user_id": {
-				Type: framework.TypeString,
+				Type:        framework.TypeString,
 				Description: "Boundary User ID",
 			},
 			"boundary_roles": {
@@ -76,7 +76,6 @@ func (b *boundaryBackend) accountRevoke(ctx context.Context, req *logical.Reques
 			return nil, fmt.Errorf("invalid value for user_id in secret internal data")
 		}
 	}
-
 
 	accountId := ""
 	accountIdRaw, ok := req.Secret.InternalData["account_id"]
@@ -155,7 +154,6 @@ func createAccount(ctx context.Context, c *boundaryClient, role string, authMeth
 		return nil, err
 	}
 
-
 	uclient := users.NewClient(c.Client)
 
 	var userOpts []users.Option
@@ -175,9 +173,8 @@ func createAccount(ctx context.Context, c *boundaryClient, role string, authMeth
 		return nil, err
 	}
 
-
 	var principalIds []string
-	principalIds = append(principalIds,ucr.Item.Id)
+	principalIds = append(principalIds, ucr.Item.Id)
 
 	rClient := roles.NewClient(c.Client)
 
@@ -189,7 +186,7 @@ func createAccount(ctx context.Context, c *boundaryClient, role string, authMeth
 	for _, s := range rolesList {
 
 		var opts []roles.Option
-		version, err := rClient.Read(ctx,s,opts...)
+		version, err := rClient.Read(ctx, s, opts...)
 		if err != nil {
 			return nil, err
 		}
@@ -201,7 +198,7 @@ func createAccount(ctx context.Context, c *boundaryClient, role string, authMeth
 
 		boundaryRoleIds = append(boundaryRoleIds, rcr.Item.Id)
 	}
-	boundaryRoleIdsString := strings.Join(boundaryRoleIds,",")
+	boundaryRoleIdsString := strings.Join(boundaryRoleIds, ",")
 
 	return &boundaryAccount{
 		AccountId:     acr.Item.Id,
@@ -209,20 +206,18 @@ func createAccount(ctx context.Context, c *boundaryClient, role string, authMeth
 		Password:      accountPassword,
 		AuthMethodId:  acr.Item.AuthMethodId,
 		BoundaryRoles: boundaryRoleIdsString,
-		UserId: ucr.Item.Id,
+		UserId:        ucr.Item.Id,
 	}, nil
 }
 
 // deleteToken calls the boundary client to remove account
 func deleteToken(ctx context.Context, c *boundaryClient, accountId string, userId string) error {
-	// TODO - create the account using plugin and manually delete and test the vault revoke to see the error
 	ucr := users.NewClient(c.Client)
 	var userOpts []users.Option
 	_, err := ucr.Delete(ctx, userId, userOpts...)
 	if err != nil {
 		return err
 	}
-
 
 	acr := accounts.NewClient(c.Client)
 

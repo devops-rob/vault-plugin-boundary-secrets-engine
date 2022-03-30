@@ -1,18 +1,18 @@
 package boundarysecrets
 
 import (
-"context"
-"fmt"
-"testing"
+	"context"
+	"fmt"
+	"testing"
 
-"github.com/hashicorp/vault/sdk/logical"
-"github.com/stretchr/testify/assert"
+	"github.com/hashicorp/vault/sdk/logical"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
-	loginName = "admin"
-	password = "password"
-	addr      = "http://localhost:9200"
+	loginName    = "admin"
+	Password     = "password"
+	addr         = "http://localhost:9200"
 	authMethodId = "ampw_1234567890"
 )
 
@@ -23,31 +23,34 @@ func TestConfig(t *testing.T) {
 
 	t.Run("Test Configuration", func(t *testing.T) {
 		err := testConfigCreate(t, b, reqStorage, map[string]interface{}{
-			"login_name": loginName,
-			"password": password,
-			"addr":      addr,
+			"login_name":     loginName,
+			"password":       Password,
+			"addr":           addr,
 			"auth_method_id": authMethodId,
 		})
 
 		assert.NoError(t, err)
 
 		err = testConfigRead(t, b, reqStorage, map[string]interface{}{
-			"login_name": loginName,
-			"addr":      addr,
+			"login_name":     loginName,
+			"auth_method_id": authMethodId,
+			"addr":           addr,
 		})
 
 		assert.NoError(t, err)
 
 		err = testConfigUpdate(t, b, reqStorage, map[string]interface{}{
-			"login_name": loginName,
-			"addr":      "http://boundary:9200",
+			"login_name":     loginName,
+			"auth_method_id": "ampw_0987654321",
+			"addr":           "http://boundary:9200",
 		})
 
 		assert.NoError(t, err)
 
 		err = testConfigRead(t, b, reqStorage, map[string]interface{}{
-			"login_name": loginName,
-			"addr":      "http://boundary:9200",
+			"login_name":     loginName,
+			"auth_method_id": "ampw_0987654321",
+			"addr":           "http://boundary:9200",
 		})
 
 		assert.NoError(t, err)

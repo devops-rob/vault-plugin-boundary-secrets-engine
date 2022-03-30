@@ -29,12 +29,12 @@ func TestUserRole(t *testing.T) {
 			_, err := testTokenRoleCreate(t, b, s,
 				roleName+strconv.Itoa(i),
 				map[string]interface{}{
-					"boundary_roles": boundary_roles,
-					"scope_id": scope_id,
+					"boundary_roles":  boundary_roles,
+					"scope_id":        scope_id,
 					"credential_type": credential_type,
-					"auth_method_id": auth_method_id,
-					"ttl":      testTTL,
-					"max_ttl":  testMaxTTL,
+					"auth_method_id":  auth_method_id,
+					"ttl":             testTTL,
+					"max_ttl":         testMaxTTL,
 				})
 			require.NoError(t, err)
 		}
@@ -46,12 +46,13 @@ func TestUserRole(t *testing.T) {
 
 	t.Run("Create User Role - pass", func(t *testing.T) {
 		resp, err := testTokenRoleCreate(t, b, s, roleName, map[string]interface{}{
-			"boundary_roles": boundary_roles,
-			"scope_id": scope_id,
+			"boundary_roles":  boundary_roles,
+			"scope_id":        scope_id,
 			"credential_type": credential_type,
-			"auth_method_id": auth_method_id,
-			"ttl":      testTTL,
-			"max_ttl":  testMaxTTL,
+			"auth_method_id":  auth_method_id,
+			"ttl":             testTTL,
+			"max_ttl":         testMaxTTL,
+			"login_name":      loginName,
 		})
 
 		require.Nil(t, err)
@@ -65,12 +66,18 @@ func TestUserRole(t *testing.T) {
 		require.Nil(t, err)
 		require.Nil(t, resp.Error())
 		require.NotNil(t, resp)
-		require.Equal(t, resp.Data["login_name"], loginName)
+		require.Equal(t, resp.Data["boundary_roles"], boundary_roles)
+		require.Equal(t, resp.Data["auth_method_id"], auth_method_id)
+		require.Equal(t, resp.Data["scope_id"], scope_id)
+		//require.Equal(t, resp.Data["credential_type"], credential_type)
 	})
 	t.Run("Update User Role", func(t *testing.T) {
 		resp, err := testTokenRoleUpdate(t, b, s, map[string]interface{}{
-			"ttl":     "1m",
-			"max_ttl": "5h",
+			"ttl":            "1m",
+			"max_ttl":        "5h",
+			"boundary_roles": "r_bauDEYaM2R",
+			"scope_id":       "0_1234567890",
+			"auth_method_id": "ampw_0987654321",
 		})
 
 		require.Nil(t, err)
@@ -84,7 +91,11 @@ func TestUserRole(t *testing.T) {
 		require.Nil(t, err)
 		require.Nil(t, resp.Error())
 		require.NotNil(t, resp)
-		require.Equal(t, resp.Data["login_name"], loginName)
+		require.Equal(t, resp.Data["boundary_roles"], "r_bauDEYaM2R")
+		require.Equal(t, resp.Data["scope_id"], "0_1234567890")
+		require.Equal(t, resp.Data["auth_method_id"], "ampw_0987654321")
+		require.Equal(t, resp.Data["ttl"], float64(60))
+		require.Equal(t, resp.Data["max_ttl"], float64(18000))
 	})
 
 	t.Run("Delete User Role", func(t *testing.T) {

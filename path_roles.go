@@ -14,7 +14,7 @@ type boundaryRoleEntry struct {
 	ScopeId       string        `json:"scope_id"`
 	LoginName     string        `json:"login_name"`
 	Password      string        `json:"password"`
-	BoundaryRoles string      `json:"boundary_roles"`
+	BoundaryRoles string        `json:"boundary_roles"`
 	TTL           time.Duration `json:"ttl"`
 	MaxTTL        time.Duration `json:"max_ttl"`
 }
