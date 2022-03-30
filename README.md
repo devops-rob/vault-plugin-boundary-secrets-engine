@@ -1,13 +1,27 @@
-# Boundary Secrets Engine
+# Boundary Secrets Engine for HashiCorp Vault
 
-## Usage
+The Boundary secrets engine generates user and account credentials dynamically based on configured permissions and scopes. This means that services that need to access a Boundary scope no longer need to hardcode credentials.
 
-1. Enable secrets engine
+With every service accessing Boundary with unique credentials, auditing is much easier in threat modelled scenarios.
+
+Vault makes use both of its own internal revocation system to delete Boundary users and accounts when generating Boundary credentials to ensure that users and accounts become invalid within a reasonable time of the lease expiring.
+
+## Setup
+
+Most secrets engines must be configured in advance before they can perform their functions. These steps are usually completed by an operator or configuration management tool.
+
+
+1. Enable secrets engine:
+
+
 ```shell
 vault secrets enable boundary
 ```
 
-2. Configure secrets engine
+By default, the secrets engine will mount at the name of the engine. To enable the secrets engine at a different path, use the -path argument.
+
+
+2. Configure the credentials that Vault uses to communicate with Boundary to generate credentials:
 ```shell
 vault write boundary/config \
   addr=http://localhost:9200 \
@@ -15,11 +29,12 @@ vault write boundary/config \
   password=password \
   auth_method_id=ampw_1234567890
 ```
+It is important that the Vault user have the permissions to manage users and accounts at all scope levels.
 
-3. Create a role
+3. Configure a role that maps a name in Vault to a Boundary scope and roles:
 
 ```shell
-vault write boundary/role/robert \
+vault write boundary/role/my-role \
   ttl=180 \
   max_ttl=360 \
   auth_method_id=ampw_1234567890 \
@@ -28,7 +43,111 @@ vault write boundary/role/robert \
   scope_id=global
 ```
 
-4. Generate Boundary credentials
+By writing to the roles/my-role path we are defining the my-role role. This role will be created by evaluating the given `auth_method_id`, `boundary_roles`, `scope_id`, `ttl` and `max_ttl` statements. Credentials generated against this role will be created at the specified scope, using the specified auth method, and will have the specified boundary roles assigned for the duration of the ttl specified. You can read more about [Boundary's Identity and Access Management domain.](https://www.hashicorp.com/blog/understanding-the-boundary-identity-and-access-management-model)
+
+## Usage
+
+After the secrets engine is configured and a user/machine has a Vault token with the proper permission, it can generate credentials.
+
+1. Generate a new credential by reading from the /creds endpoint with the name of the role:
 ```shell
-vault read boundary/creds/robert
+vault read boundary/creds/my-role
+```
+
+## API
+
+### Setup
+
+1. Enable secrets engine
+
+Sample request
+
+```shell
+curl \
+    -X POST \
+    --header "X-Vault-Token: ..." \
+    http://127.0.0.1:8200/v1/sys/mounts
+```
+
+Sample payload
+
+```json
+{
+    "type": "boundary"
+}
+```
+
+2. Configure the credentials that Vault uses to communicate with Boundary to generate credentials:
+
+Sample request
+```shell
+curl \
+    -X POST \
+    --header "X-Vault-Token: ..." \
+    http://127.0.0.1:8200/v1/boundary/config
+```
+
+Sample payload
+```json
+{
+  "addr": "http://localhost:9200",
+  "login_name": "vault-admin",
+  "password": "...",
+  "auth_method_id": "ampw_1234567890"
+}
+```
+
+3. Configure a role that maps a name in Vault to a Boundary scope and roles:
+
+Sample request
+```shell
+curl \
+    -X POST \
+    --header "X-Vault-Token: ..." \
+    http://127.0.0.1:8200/v1/boundary/role/my-role
+```
+
+Sample payload
+```json
+{
+    "ttl": 180,
+    "max_ttl": 360,
+    "auth_method_id": "ampw_1234567890",
+    "credential_type": "userpass",
+    "boundary_roles": "r_cbvEFZbN1S,r_r8mxdp7zOp",
+    "scope_id": "global"
+}
+```
+
+### Usage
+
+1. Generate a new credential by reading from the /creds endpoint with the name of the role:
+
+Sample request
+```shell
+curl \
+    -X GET \
+    --header "X-Vault-Token: ..." \
+    http://127.0.0.1:8200/v1/boundary/creds/my-role
+```
+
+Sample response
+```json
+{
+    "request_id": "ed281bc6-182d-a15e-d700-8c2e64897010",
+    "lease_id": "boundary/creds/my-role/pH9CfQcAmE9va6CwQKOEPBsx",
+    "renewable": true,
+    "lease_duration": 180,
+    "data": {
+        "account_id": "acctpw_Haufl3nWxH",
+        "auth_method_id": "ampw_1234567890",
+        "boundary_roles": "r_CSuslu0w1X,r_S0OqRsecY6",
+        "login_name": "vault-role-my-role-fudjntgy",
+        "password": "2QW7U03mXr614895",
+        "user_id": "u_sKom7Pxa1v"
+    },
+    "wrap_info": null,
+    "warnings": null,
+    "auth": null
+}
 ```
