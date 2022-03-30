@@ -23,15 +23,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a92038cd-524c-4803-907e-df510e7260d6" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/git-repos.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/git-repos.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boundary_account.go" beforeDir="false" afterPath="$PROJECT_DIR$/boundary_account.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/path_config_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/path_config_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/path_credentials.go" beforeDir="false" afterPath="$PROJECT_DIR$/path_credentials.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/path_credentials_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/path_credentials_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/path_roles.go" beforeDir="false" afterPath="$PROJECT_DIR$/path_roles.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/path_roles_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/path_roles_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
