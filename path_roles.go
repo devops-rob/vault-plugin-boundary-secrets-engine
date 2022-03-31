@@ -12,9 +12,7 @@ type boundaryRoleEntry struct {
 	AuthMethodID  string        `json:"auth_method_id"`
 	Name          string        `json:"name"`
 	ScopeId       string        `json:"scope_id"`
-	LoginName     string        `json:"login_name"`
-	Password      string        `json:"password"`
-	BoundaryRoles string      `json:"boundary_roles"`
+	BoundaryRoles string        `json:"boundary_roles"`
 	TTL           time.Duration `json:"ttl"`
 	MaxTTL        time.Duration `json:"max_ttl"`
 }
@@ -23,7 +21,6 @@ func (r *boundaryRoleEntry) toResponseData() map[string]interface{} {
 	respData := map[string]interface{}{
 		"ttl":            r.TTL.Seconds(),
 		"max_ttl":        r.MaxTTL.Seconds(),
-		"login_name":     r.LoginName,
 		"boundary_roles": r.BoundaryRoles,
 		"name":           r.Name,
 		"auth_method_id": r.AuthMethodID,
