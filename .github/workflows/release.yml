@@ -8,6 +8,7 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+
     steps:
       -
         name: Checkout
@@ -23,7 +24,9 @@ jobs:
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
+          distribution: goreleaser
           version: latest
           args: release --rm-dist
+          workdir: cmd/vault-plugin-secrets-boundary/main.go
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
