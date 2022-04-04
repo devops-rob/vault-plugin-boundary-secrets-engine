@@ -29,6 +29,6 @@ jobs:
           distribution: goreleaser
           version: latest
           args: release --rm-dist
-          workdir: cmd/vault-plugin-secrets-boundary/main.go
+          workdir: ./cmd/vault-plugin-secrets-boundary/main.go
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
