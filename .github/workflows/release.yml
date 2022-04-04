@@ -6,6 +6,8 @@ on:
       - '*'
     branches:
       - main
+permissions:
+  contents: write
 jobs:
   build:
     name: Build
@@ -19,6 +21,9 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
+
+      - name: Fetch all tags
+        run: git fetch --force --tags
 
       - name: Get dependencies
         run: |
