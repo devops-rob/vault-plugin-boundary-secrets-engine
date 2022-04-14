@@ -151,3 +151,98 @@ Sample response
     "auth": null
 }
 ```
+
+## Terraform
+
+### Setup
+
+1. Enable secrets engine:
+
+```hcl
+resource "vault_mount" "boundary" {
+  path        = "boundary"
+  type        = "boundary"
+  description = "This is the boundary secrets engine"
+}
+```
+
+2. Configure the credentials that Vault uses to communicate with Boundary to generate credentials:
+
+```hcl
+resource "vault_generic_endpoint" "boundary_config" {
+  depends_on           = [
+    vault_mount.boundary
+  ]
+  
+  path                 = "boundary/config"
+  ignore_absent_fields = true
+
+  data_json = <<EOT
+{
+  "addr": "http://localhost:9200",
+  "login_name": "vault-admin",
+  "password": "...",
+  "auth_method_id": "ampw_1234567890"
+}
+EOT
+}
+
+```
+
+3. Configure a role that maps a name in Vault to a Boundary scope and roles:
+
+```hcl
+resource "vault_generic_endpoint" "boundary_role" {
+  depends_on           = [
+    vault_mount.boundary
+  ]
+  
+  path                 = "boundary/role/my-role"
+  ignore_absent_fields = true
+
+  data_json = <<EOT
+{
+    "ttl": 180,
+    "max_ttl": 360,
+    "auth_method_id": "ampw_1234567890",
+    "credential_type": "userpass",
+    "boundary_roles": "r_cbvEFZbN1S,r_r8mxdp7zOp",
+    "scope_id": "global"
+}
+EOT
+}
+```
+
+## Usage
+
+1. Generate a new credential by reading from the /creds endpoint with the name of the role:
+
+```hcl
+data "vault_generic_secret" "boundary_creds" {
+  path = "boundary/creds/my-role"
+}
+
+output "creds" {
+  value     = data.vault_generic_secret.boundary_creds.data
+  sensitive = true
+}
+```
+
+2. Read the output from Terraform's state file:
+
+```shell
+terraform output creds
+```
+
+Example response:
+
+```
+tomap({
+  "account_id" = "acctpw_nNaPX7PYzl"
+  "auth_method_id" = "ampw_1234567890"
+  "boundary_roles" = "r_U2t8YBalKE,r_5hKAwk9Rs9"
+  "login_name" = "vault-role-my-role-tewohlyv"
+  "password" = "4Le8z639725g0f1G"
+  "user_id" = "u_TxJs1IabfY"
+})
+```
