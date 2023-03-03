@@ -6,7 +6,7 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/frankban/quicktest v1.14.0 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
-	github.com/hashicorp/boundary/api v0.0.21
+	github.com/hashicorp/boundary/api v0.0.34
 	github.com/hashicorp/go-hclog v1.0.0
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.2 // indirect
@@ -22,7 +22,6 @@ require (
 	github.com/sethvargo/go-password v0.2.0
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210903162649-d08c68adba83 // indirect

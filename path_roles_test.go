@@ -17,6 +17,7 @@ const (
 	credential_type = "userpass"
 	testTTL         = int64(120)
 	testMaxTTL      = int64(3600)
+	roleType        = "user"
 )
 
 // TestUserRole uses a mock backend to check
@@ -29,12 +30,13 @@ func TestUserRole(t *testing.T) {
 			_, err := testTokenRoleCreate(t, b, s,
 				roleName+strconv.Itoa(i),
 				map[string]interface{}{
-					"boundary_roles":  boundary_roles,
-					"scope_id":        scope_id,
-					"credential_type": credential_type,
-					"auth_method_id":  auth_method_id,
-					"ttl":             testTTL,
-					"max_ttl":         testMaxTTL,
+					"boundary_roles":       boundary_roles,
+					"scope_id":             scope_id,
+					"user_credential_type": credential_type,
+					"auth_method_id":       auth_method_id,
+					"ttl":                  testTTL,
+					"max_ttl":              testMaxTTL,
+					"role_type":            roleType,
 				})
 			require.NoError(t, err)
 		}
@@ -46,13 +48,14 @@ func TestUserRole(t *testing.T) {
 
 	t.Run("Create User Role - pass", func(t *testing.T) {
 		resp, err := testTokenRoleCreate(t, b, s, roleName, map[string]interface{}{
-			"boundary_roles":  boundary_roles,
-			"scope_id":        scope_id,
-			"credential_type": credential_type,
-			"auth_method_id":  auth_method_id,
-			"ttl":             testTTL,
-			"max_ttl":         testMaxTTL,
-			"login_name":      loginName,
+			"boundary_roles":       boundary_roles,
+			"scope_id":             scope_id,
+			"user_credential_type": credential_type,
+			"auth_method_id":       auth_method_id,
+			"ttl":                  testTTL,
+			"max_ttl":              testMaxTTL,
+			"login_name":           loginName,
+			"role_type":            roleType,
 		})
 
 		require.Nil(t, err)

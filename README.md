@@ -1,12 +1,14 @@
 # Boundary Secrets Engine for HashiCorp Vault
 
-The Boundary secrets engine generates user and account credentials dynamically based on configured permissions and scopes. This means that services that need to access a Boundary scope no longer need to hardcode credentials.
+The Boundary secrets engine creates Boundary Workers, and additionally, generates user and account credentials dynamically based on configured permissions and scopes. This means that services that need to access a Boundary scope no longer need to hardcode credentials and Boundary workers can be ephemeral.
 
 With every service accessing Boundary with unique credentials, auditing is much easier in threat modelled scenarios.
 
 Vault makes use both of its own internal revocation system to delete Boundary users and accounts when generating Boundary credentials to ensure that users and accounts become invalid within a reasonable time of the lease expiring.
 
-## Setup
+Additionally, Vault can remove workers that it has created, thereby removing the controller led auth token
+
+## Setup for User credentials
 
 Most secrets engines must be configured in advance before they can perform their functions. These steps are usually completed by an operator or configuration management tool.
 
@@ -38,9 +40,10 @@ vault write boundary/role/my-role \
   ttl=180 \
   max_ttl=360 \
   auth_method_id=ampw_1234567890 \
-  credential_type=userpass \
-  boundary_roles=r_cbvEFZbN1S,r_r8mxdp7zOp \
+  boundary_roles=r_cwRmglckUr \
+  role_type=user \
   scope_id=global
+  
 ```
 
 By writing to the roles/my-role path we are defining the my-role role. This role will be created by evaluating the given `auth_method_id`, `boundary_roles`, `scope_id`, `ttl` and `max_ttl` statements. Credentials generated against this role will be created at the specified scope, using the specified auth method, and will have the specified boundary roles assigned for the duration of the ttl specified. You can read more about [Boundary's Identity and Access Management domain.](https://www.hashicorp.com/blog/understanding-the-boundary-identity-and-access-management-model)
@@ -52,6 +55,24 @@ After the secrets engine is configured and a user/machine has a Vault token with
 1. Generate a new credential by reading from the /creds endpoint with the name of the role:
 ```shell
 vault read boundary/creds/my-role
+```
+
+### Worker auth tokens
+
+Configuring a worker role is slightly different to a user role. The example below shows a worker role being configured:
+
+```shell
+vault write boundary/role/worker \
+  ttl=180 \
+  max_ttl=360 \
+  role_type=worker \
+  scope_id=global
+```
+
+A worker can then be generated using the following command:
+
+```shell
+vault read boundary/creds/worker worker_name="local worker"
 ```
 
 ## API
@@ -115,6 +136,7 @@ Sample payload
     "auth_method_id": "ampw_1234567890",
     "credential_type": "userpass",
     "boundary_roles": "r_cbvEFZbN1S,r_r8mxdp7zOp",
+    "role_type": "user",
     "scope_id": "global"
 }
 ```
@@ -207,6 +229,7 @@ resource "vault_generic_endpoint" "boundary_role" {
     "auth_method_id": "ampw_1234567890",
     "credential_type": "userpass",
     "boundary_roles": "r_cbvEFZbN1S,r_r8mxdp7zOp",
+    "role_type": "user"
     "scope_id": "global"
 }
 EOT

@@ -15,6 +15,8 @@ type boundaryRoleEntry struct {
 	BoundaryRoles string        `json:"boundary_roles"`
 	TTL           time.Duration `json:"ttl"`
 	MaxTTL        time.Duration `json:"max_ttl"`
+	RoleType      string        `json:"role_type"`
+	//UserCredentialType string        `json:"user_credential_type"`
 }
 
 func (r *boundaryRoleEntry) toResponseData() map[string]interface{} {
@@ -25,11 +27,12 @@ func (r *boundaryRoleEntry) toResponseData() map[string]interface{} {
 		"name":           r.Name,
 		"auth_method_id": r.AuthMethodID,
 		"scope_id":       r.ScopeId,
+		"role_type":      r.RoleType,
+		//"user_credential_type": r.UserCredentialType,
 	}
 	return respData
 }
 
-// TODO - add schema below from struct above
 func pathRole(b *boundaryBackend) []*framework.Path {
 	return []*framework.Path{
 		{
@@ -61,10 +64,15 @@ func pathRole(b *boundaryBackend) []*framework.Path {
 					Type:        framework.TypeLowerCaseString, // Boundary auth method ID that the account is created under
 					Description: "Boundary auth method ID that the account is created under",
 				},
-				"credential_type": {
+				"role_type": {
 					Type:        framework.TypeLowerCaseString,
-					Description: "Vault role type. Currently only supports `userpass` type.",
+					Description: "Must be either `user` or `worker` type",
+					Required:    true,
 				},
+				//"user_credential_type": {
+				//	Type:        framework.TypeLowerCaseString,
+				//	Description: "Vault role type. Currently only supports `userpass` type.",
+				//},
 			},
 			Operations: map[logical.Operation]framework.OperationHandler{
 				logical.ReadOperation: &framework.PathOperation{
@@ -174,19 +182,23 @@ func (b *boundaryBackend) pathRolesWrite(ctx context.Context, req *logical.Reque
 		roleEntry = &boundaryRoleEntry{}
 	}
 
-	createOperation := (req.Operation == logical.CreateOperation)
-
-	//if login_name, ok := d.GetOk("login_name"); ok {
-	//	roleEntry.LoginName = login_name.(string)
-	//} else if !ok && createOperation {
-	//	return nil, fmt.Errorf("missing username in role")
-	//}
+	createOperation := req.Operation == logical.CreateOperation
 
 	if name, ok := d.GetOk("name"); ok {
 		roleEntry.Name = name.(string)
 	} else if !ok && createOperation {
 		return nil, fmt.Errorf("missing name of role")
 	}
+
+	if roleType, ok := d.GetOk("role_type"); ok {
+		roleEntry.RoleType = roleType.(string)
+	} else if !ok && createOperation {
+		return nil, fmt.Errorf("missing role type")
+	}
+
+	//if roleEntry.RoleType != "user" || roleEntry.RoleType != "worker" {
+	//	return logical.ErrorResponse("must be set to either `user` or `worker`"), nil
+	//}
 
 	// Check there is a list of boundary roles
 	if boundaryRoles, ok := d.GetOk("boundary_roles"); ok {
