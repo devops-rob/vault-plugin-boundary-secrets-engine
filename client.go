@@ -34,7 +34,11 @@ func newClient(config *boundaryConfig) (*boundaryClient, error) {
 		return nil, errors.New("auth-method ID was not defined")
 	}
 
-	client, err := boundary.NewClient(nil)
+	cfg := boundary.Config{
+		Addr: config.Addr,
+	}
+
+	client, err := boundary.NewClient(&cfg)
 	if err != nil {
 		return nil, err
 	}
