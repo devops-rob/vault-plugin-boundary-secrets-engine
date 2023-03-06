@@ -69,10 +69,6 @@ func pathRole(b *boundaryBackend) []*framework.Path {
 					Description: "Must be either `user` or `worker` type",
 					Required:    true,
 				},
-				//"user_credential_type": {
-				//	Type:        framework.TypeLowerCaseString,
-				//	Description: "Vault role type. Currently only supports `userpass` type.",
-				//},
 			},
 			Operations: map[logical.Operation]framework.OperationHandler{
 				logical.ReadOperation: &framework.PathOperation{
@@ -190,27 +186,38 @@ func (b *boundaryBackend) pathRolesWrite(ctx context.Context, req *logical.Reque
 		return nil, fmt.Errorf("missing name of role")
 	}
 
-	if roleType, ok := d.GetOk("role_type"); ok {
-		roleEntry.RoleType = roleType.(string)
+	var roleType string
+
+	if rt, ok := d.GetOk("role_type"); ok {
+		roleType = rt.(string)
+		roleEntry.RoleType = roleType
 	} else if !ok && createOperation {
-		return nil, fmt.Errorf("missing role type")
+		return nil, fmt.Errorf("missing role type. must be either `user` or `worker`")
 	}
 
-	//if roleEntry.RoleType != "user" || roleEntry.RoleType != "worker" {
-	//	return logical.ErrorResponse("must be set to either `user` or `worker`"), nil
-	//}
+	if roleType != "user" && roleType != "worker" {
+		return logical.ErrorResponse("must be set to either `user` or `worker`"), nil
+	}
+
+	var boundaryRoles interface{}
 
 	// Check there is a list of boundary roles
-	if boundaryRoles, ok := d.GetOk("boundary_roles"); ok {
+	if boundaryRoles, ok = d.GetOk("boundary_roles"); ok {
 		roleEntry.BoundaryRoles = boundaryRoles.(string)
-	} else if !ok && createOperation {
+	}
+
+	if roleType == "user" && boundaryRoles == nil {
 		return nil, fmt.Errorf("missing boundary_roles in role")
 	}
 
-	// Check there is an auth method id
-	if authMethodID, ok := d.GetOk("auth_method_id"); ok {
+	// Check there is an auth method id for user role
+
+	var authMethodID interface{}
+	if authMethodID, ok = d.GetOk("auth_method_id"); ok {
 		roleEntry.AuthMethodID = authMethodID.(string)
-	} else if !ok && createOperation {
+	}
+
+	if roleType == "user" && authMethodID == "" {
 		return nil, fmt.Errorf("missing auth_method_id in role")
 	}
 
