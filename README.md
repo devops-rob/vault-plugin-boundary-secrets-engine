@@ -75,6 +75,12 @@ A worker can then be generated using the following command:
 vault read boundary/creds/worker worker_name="local worker"
 ```
 
+An optional description can be added to the worker using the `description` parameter.
+
+```shell
+vault read boundary/creds/worker worker_name="local worker" description="Local worker for testing purposes"
+```
+
 ## API
 
 ### Setup
