@@ -17,6 +17,8 @@ const (
 	credential_type = "userpass"
 	testTTL         = int64(120)
 	testMaxTTL      = int64(3600)
+	roleType        = "user"
+	workerRoleName  = "testboundaryworker"
 )
 
 // TestUserRole uses a mock backend to check
@@ -29,12 +31,13 @@ func TestUserRole(t *testing.T) {
 			_, err := testTokenRoleCreate(t, b, s,
 				roleName+strconv.Itoa(i),
 				map[string]interface{}{
-					"boundary_roles":  boundary_roles,
-					"scope_id":        scope_id,
-					"credential_type": credential_type,
-					"auth_method_id":  auth_method_id,
-					"ttl":             testTTL,
-					"max_ttl":         testMaxTTL,
+					"boundary_roles":       boundary_roles,
+					"scope_id":             scope_id,
+					"user_credential_type": credential_type,
+					"auth_method_id":       auth_method_id,
+					"ttl":                  testTTL,
+					"max_ttl":              testMaxTTL,
+					"role_type":            roleType,
 				})
 			require.NoError(t, err)
 		}
@@ -46,13 +49,14 @@ func TestUserRole(t *testing.T) {
 
 	t.Run("Create User Role - pass", func(t *testing.T) {
 		resp, err := testTokenRoleCreate(t, b, s, roleName, map[string]interface{}{
-			"boundary_roles":  boundary_roles,
-			"scope_id":        scope_id,
-			"credential_type": credential_type,
-			"auth_method_id":  auth_method_id,
-			"ttl":             testTTL,
-			"max_ttl":         testMaxTTL,
-			"login_name":      loginName,
+			"boundary_roles":       boundary_roles,
+			"scope_id":             scope_id,
+			"user_credential_type": credential_type,
+			"auth_method_id":       auth_method_id,
+			"ttl":                  testTTL,
+			"max_ttl":              testMaxTTL,
+			//"login_name":           loginName,
+			"role_type": roleType,
 		})
 
 		require.Nil(t, err)
@@ -78,6 +82,7 @@ func TestUserRole(t *testing.T) {
 			"boundary_roles": "r_bauDEYaM2R",
 			"scope_id":       "0_1234567890",
 			"auth_method_id": "ampw_0987654321",
+			"role_type":      roleType,
 		})
 
 		require.Nil(t, err)
@@ -99,6 +104,80 @@ func TestUserRole(t *testing.T) {
 	})
 
 	t.Run("Delete User Role", func(t *testing.T) {
+		_, err := testTokenRoleDelete(t, b, s)
+
+		require.NoError(t, err)
+	})
+}
+
+func TestWorkerRole(t *testing.T) {
+	b, s := getTestBackend(t)
+
+	t.Run("List All Roles", func(t *testing.T) {
+		for i := 1; i <= 10; i++ {
+			_, err := testTokenRoleCreate(t, b, s,
+				workerRoleName+strconv.Itoa(i),
+				map[string]interface{}{
+					"scope_id":  scope_id,
+					"ttl":       testTTL,
+					"max_ttl":   testMaxTTL,
+					"role_type": "worker",
+				})
+			require.NoError(t, err)
+		}
+
+		resp, err := testTokenRoleList(t, b, s)
+		require.NoError(t, err)
+		require.Len(t, resp.Data["keys"].([]string), 10)
+	})
+
+	t.Run("Create Worker Role - pass", func(t *testing.T) {
+		resp, err := testTokenRoleCreate(t, b, s, roleName, map[string]interface{}{
+			"scope_id":  scope_id,
+			"ttl":       testTTL,
+			"max_ttl":   testMaxTTL,
+			"role_type": "worker",
+		})
+
+		require.Nil(t, err)
+		require.Nil(t, resp.Error())
+		require.Nil(t, resp)
+	})
+
+	t.Run("Read Worker Role", func(t *testing.T) {
+		resp, err := testTokenRoleRead(t, b, s)
+
+		require.Nil(t, err)
+		require.Nil(t, resp.Error())
+		require.NotNil(t, resp)
+		require.Equal(t, resp.Data["scope_id"], scope_id)
+		//require.Equal(t, resp.Data["credential_type"], credential_type)
+	})
+	t.Run("Update Worker Role", func(t *testing.T) {
+		resp, err := testTokenRoleUpdate(t, b, s, map[string]interface{}{
+			"ttl":       "1m",
+			"max_ttl":   "5h",
+			"scope_id":  "0_0987654321",
+			"role_type": "worker",
+		})
+
+		require.Nil(t, err)
+		require.Nil(t, resp.Error())
+		require.Nil(t, resp)
+	})
+
+	t.Run("Re-read Worker Role", func(t *testing.T) {
+		resp, err := testTokenRoleRead(t, b, s)
+
+		require.Nil(t, err)
+		require.Nil(t, resp.Error())
+		require.NotNil(t, resp)
+		require.Equal(t, resp.Data["scope_id"], "0_0987654321")
+		require.Equal(t, resp.Data["ttl"], float64(60))
+		require.Equal(t, resp.Data["max_ttl"], float64(18000))
+	})
+
+	t.Run("Delete Worker Role", func(t *testing.T) {
 		_, err := testTokenRoleDelete(t, b, s)
 
 		require.NoError(t, err)

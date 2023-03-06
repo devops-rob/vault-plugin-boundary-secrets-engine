@@ -44,7 +44,7 @@ func backend() *boundaryBackend {
 				pathCredentials(&b),
 			},
 		),
-		Secrets:     []*framework.Secret{b.boundaryAccount()}, // Add boundary users secrets generation here.
+		Secrets:     []*framework.Secret{b.boundaryAccount(), b.boundaryWorker()}, // Add boundary users secrets generation here.
 		BackendType: logical.TypeLogical,
 		Invalidate:  b.invalidate,
 	}
@@ -98,7 +98,7 @@ func (b *boundaryBackend) getClient(ctx context.Context, s logical.Storage) (*bo
 }
 
 const backendHelp = `
-The Boundary secrets backend dynamically generates user tokens.
+The Boundary secrets backend dynamically generates user or worker tokens.
 After mounting this backend, credentials to manage Boundary user tokens
 must be configured with the "config/" endpoints.
 `
