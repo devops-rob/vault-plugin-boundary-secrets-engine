@@ -16,7 +16,6 @@ type boundaryRoleEntry struct {
 	TTL           time.Duration `json:"ttl"`
 	MaxTTL        time.Duration `json:"max_ttl"`
 	RoleType      string        `json:"role_type"`
-	//UserCredentialType string        `json:"user_credential_type"`
 }
 
 func (r *boundaryRoleEntry) toResponseData() map[string]interface{} {
@@ -28,7 +27,6 @@ func (r *boundaryRoleEntry) toResponseData() map[string]interface{} {
 		"auth_method_id": r.AuthMethodID,
 		"scope_id":       r.ScopeId,
 		"role_type":      r.RoleType,
-		//"user_credential_type": r.UserCredentialType,
 	}
 	return respData
 }
@@ -57,11 +55,11 @@ func pathRole(b *boundaryBackend) []*framework.Path {
 					Description: "Maximum time for role. If not set or set to 0, will use system default.",
 				},
 				"scope_id": {
-					Type:        framework.TypeLowerCaseString, // Boundary scope ID under which Users will be created
+					Type:        framework.TypeString, // Boundary scope ID under which Users will be created
 					Description: "Boundary scope ID of the Vault generated user",
 				},
 				"auth_method_id": {
-					Type:        framework.TypeLowerCaseString, // Boundary auth method ID that the account is created under
+					Type:        framework.TypeString, // Boundary auth method ID that the account is created under
 					Description: "Boundary auth method ID that the account is created under",
 				},
 				"role_type": {
