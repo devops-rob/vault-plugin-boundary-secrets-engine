@@ -95,14 +95,6 @@ func (b *boundaryBackend) createUserCreds(ctx context.Context, req *logical.Requ
 			"account_id": account.AccountId,
 			"user_id":    account.UserId,
 		})
-
-		//if role.TTL > 0 {
-		//	resp.Secret.TTL = role.TTL
-		//}
-		//
-		//if role.MaxTTL > 0 {
-		//	resp.Secret.MaxTTL = role.MaxTTL
-		//}
 	case "worker":
 		worker, err := b.createWorker(ctx, req.Storage, role, workerName, workerDescription)
 		if err != nil {
