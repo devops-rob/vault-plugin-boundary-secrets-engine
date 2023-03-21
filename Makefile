@@ -1,6 +1,6 @@
 name = boundary
 plugin_type = secrets-engine
-version = 1.0.1
+version = 1.0.2
 
 build:
 	go build -o vault/plugins/boundary cmd/vault-plugin-secrets-boundary/main.go
