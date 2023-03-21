@@ -28,4 +28,7 @@ zip:
 	zip -j ./bin/vault-plugin-$(name)-$(plugin_type)_v$(version)_windows_amd64.zip ./bin/windows_amd64/vault-plugin-$(name)-$(plugin_type)_v$(version).exe
 	zip -j ./bin/vault-plugin-$(name)-$(plugin_type)_v$(version)_windows_386.zip ./bin/windows_386/vault-plugin-$(name)-$(plugin_type)_v$(version).exe
 	ls -lha ./bin
-
+shasum:
+	cd bin/; shasum -a 256 *.zip > vault-plugin-$(name)-$(plugin_type)_v$(version)_SHA256SUMS
+gpg:
+	gpg --detach-sign ./bin/vault-plugin-$(name)-$(plugin_type)_v$(version)_SHA256SUMS
