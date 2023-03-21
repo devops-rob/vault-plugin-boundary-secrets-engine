@@ -71,6 +71,9 @@ func (b *boundaryBackend) pathCredentialsRead(ctx context.Context, req *logical.
 func (b *boundaryBackend) createUserCreds(ctx context.Context, req *logical.Request, role *boundaryRoleEntry, workerName string, workerDescription string) (*logical.Response, error) {
 	var resp *logical.Response
 
+	roleTtl := role.TTL
+	roleMaxTtl := role.MaxTTL
+
 	roleType := role.RoleType
 
 	switch roleType {
@@ -94,6 +97,8 @@ func (b *boundaryBackend) createUserCreds(ctx context.Context, req *logical.Requ
 		}, map[string]interface{}{
 			"account_id": account.AccountId,
 			"user_id":    account.UserId,
+			"ttl":        roleTtl,
+			"max_ttl":    roleMaxTtl,
 		})
 	case "worker":
 		worker, err := b.createWorker(ctx, req.Storage, role, workerName, workerDescription)
@@ -109,6 +114,8 @@ func (b *boundaryBackend) createUserCreds(ctx context.Context, req *logical.Requ
 		}, map[string]interface{}{
 			"worker_id":   worker.WorkerId,
 			"worker_name": worker.WorkerName,
+			"ttl":         roleTtl,
+			"max_ttl":     roleMaxTtl,
 		})
 
 	}
