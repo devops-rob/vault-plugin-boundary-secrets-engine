@@ -1,3 +1,4 @@
 vault/plugins/*
+.vscode
 .idea
 /bin/
