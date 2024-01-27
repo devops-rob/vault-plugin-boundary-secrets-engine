@@ -2,10 +2,11 @@ package boundarysecrets
 
 import (
 	"context"
-	"github.com/hashicorp/vault/sdk/framework"
-	"github.com/hashicorp/vault/sdk/logical"
 	"strings"
 	"sync"
+
+	"github.com/hashicorp/vault/sdk/framework"
+	"github.com/hashicorp/vault/sdk/logical"
 )
 
 // Factory Implements a storage backend and sets this up
@@ -63,6 +64,7 @@ func (b *boundaryBackend) invalidate(ctx context.Context, key string) {
 	}
 }
 
+// getClient returns a new Boundary client that is configured and has been authenticated.
 func (b *boundaryBackend) getClient(ctx context.Context, s logical.Storage) (*boundaryClient, error) {
 	b.lock.RLock()
 	unlockFunc := b.lock.RUnlock
