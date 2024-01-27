@@ -3,6 +3,10 @@ package boundarysecrets
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/hashicorp/boundary/api/accounts"
 	"github.com/hashicorp/boundary/api/roles"
 	"github.com/hashicorp/boundary/api/users"
@@ -10,9 +14,6 @@ import (
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/sethvargo/go-password/password"
-	"log"
-	"strings"
-	"time"
 )
 
 const (
@@ -226,7 +227,12 @@ func (b *boundaryBackend) workerRenew(ctx context.Context, req *logical.Request,
 
 // createToken calls the Boundary client and creates a new Boundary account
 func createAccount(ctx context.Context, c *boundaryClient, role string, authMethodID string, boundaryRoles string, scopeId string) (*boundaryAccount, error) {
-
+	const op = "createAccount"
+	if c.tokenIsExpired() {
+		if err := c.authenticate(); err != nil {
+			return nil, fmt.Errorf("%s: unable to authenticate client: %w", op, err)
+		}
+	}
 	// Accounts client
 	aClient := accounts.NewClient(c.Client)
 
@@ -316,6 +322,12 @@ func createAccount(ctx context.Context, c *boundaryClient, role string, authMeth
 
 // deleteToken calls the boundary client to remove account
 func deleteToken(ctx context.Context, c *boundaryClient, accountId string, userId string) error {
+	const op = "deleteToken"
+	if c.tokenIsExpired() {
+		if err := c.authenticate(); err != nil {
+			return fmt.Errorf("%s: unable to authenticate client: %w", op, err)
+		}
+	}
 	ucr := users.NewClient(c.Client)
 	var userOpts []users.Option
 	_, err := ucr.Delete(ctx, userId, userOpts...)
@@ -335,6 +347,12 @@ func deleteToken(ctx context.Context, c *boundaryClient, accountId string, userI
 }
 
 func createWorker(ctx context.Context, c *boundaryClient, scopeId string, workerName string, description string) (*boundaryWorker, error) {
+	const op = "createWorker"
+	if c.tokenIsExpired() {
+		if err := c.authenticate(); err != nil {
+			return nil, fmt.Errorf("%s: unable to authenticate client: %w", op, err)
+		}
+	}
 	wcl := workers.NewClient(c.Client)
 	var workerOpts []workers.Option
 	workerOpts = append(workerOpts, workers.WithAutomaticVersioning(true))
@@ -354,6 +372,12 @@ func createWorker(ctx context.Context, c *boundaryClient, scopeId string, worker
 }
 
 func deleteWorker(ctx context.Context, c *boundaryClient, workerId string) error {
+	const op = "deleteWorker"
+	if c.tokenIsExpired() {
+		if err := c.authenticate(); err != nil {
+			return fmt.Errorf("%s: unable to authenticate client: %w", op, err)
+		}
+	}
 	wcl := workers.NewClient(c.Client)
 	var workerOpts []workers.Option
 
